@@ -5,21 +5,23 @@ import {
   listCities,
   printHeader,
   printMenu,
-  printMessage,
+  printWeather,
+  printSuccess,
+  printError,
+  printInfo,
   unitSymbol,
-  formatLocation,
 } from "./src/ui.ts";
 import type { PromptFn } from "./src/prompt.ts";
 import { createPrompt } from "./src/prompt.ts";
 
-async function printWeather(city: City, unit: Config["unit"]): Promise<void> {
+async function showWeather(city: City, unit: Config["unit"]): Promise<void> {
   const temp = await fetchTemperature(city, unit);
-  printMessage(`${formatLocation(city)}: ${temp} ${unitSymbol(unit)}`);
+  printWeather(city, temp, unit);
 }
 
 function requireCities(config: Config): boolean {
   if (config.cities.length === 0) {
-    printMessage("No hay ciudades guardadas. Usa la opción 3 para agregar una.");
+    printInfo("No hay ciudades guardadas. Usa la opción 3 para agregar una.");
     return false;
   }
   return true;
@@ -32,7 +34,7 @@ async function pickCity(rl: PromptFn, config: Config, action: string): Promise<C
   if (answer === null || answer === "") return null;
   const index = Number(answer) - 1;
   if (Number.isNaN(index) || index < 0 || index >= config.cities.length) {
-    printMessage("Opción inválida.");
+    printError("Opción inválida.");
     return null;
   }
   return config.cities[index]!;
@@ -41,16 +43,16 @@ async function pickCity(rl: PromptFn, config: Config, action: string): Promise<C
 async function showDefaultWeather(config: Config): Promise<void> {
   const city = config.cities.find((c) => c.name === config.defaultCity);
   if (city === undefined) {
-    printMessage("No hay ciudad default. Usa la opción 5 para establecerla.");
+    printInfo("No hay ciudad default. Usa la opción 5 para establecerla.");
     return;
   }
-  await printWeather(city, config.unit);
+  await showWeather(city, config.unit);
 }
 
 async function showAllWeather(config: Config): Promise<void> {
   if (!requireCities(config)) return;
   for (const city of config.cities) {
-    await printWeather(city, config.unit);
+    await showWeather(city, config.unit);
   }
 }
 
@@ -59,15 +61,15 @@ async function addCity(rl: PromptFn, config: Config): Promise<void> {
   if (query === null || query === "") return;
   const city = await searchCity(query);
   if (city === null) {
-    printMessage(`No se encontró "${query}".`);
+    printError(`No se encontró "${query}".`);
     return;
   }
   if (config.cities.some((c) => c.name === city.name)) {
-    printMessage(`${city.name} ya está guardada.`);
+    printError(`${city.name} ya está guardada.`);
     return;
   }
   config.cities.push(city);
-  await printWeather(city, config.unit);
+  await showWeather(city, config.unit);
 }
 
 async function removeCity(rl: PromptFn, config: Config): Promise<void> {
@@ -75,19 +77,19 @@ async function removeCity(rl: PromptFn, config: Config): Promise<void> {
   if (city === null) return;
   config.cities = config.cities.filter((c) => c.name !== city.name);
   if (config.defaultCity === city.name) config.defaultCity = null;
-  printMessage(`${city.name} eliminada.`);
+  printSuccess(`${city.name} eliminada.`);
 }
 
 async function setDefaultCity(rl: PromptFn, config: Config): Promise<void> {
   const city = await pickCity(rl, config, "establecer como default");
   if (city === null) return;
   config.defaultCity = city.name;
-  printMessage(`Ciudad default: ${city.name}`);
+  printSuccess(`Ciudad default: ${city.name}`);
 }
 
 function toggleUnit(config: Config): void {
   config.unit = config.unit === "c" ? "f" : "c";
-  printMessage(`Unidad: ${unitSymbol(config.unit)}`);
+  printSuccess(`Unidad: ${unitSymbol(config.unit)}`);
 }
 
 async function runOption(option: string, rl: PromptFn, config: Config): Promise<boolean> {
@@ -113,7 +115,7 @@ async function runOption(option: string, rl: PromptFn, config: Config): Promise<
     case "9":
       return false;
     default:
-      printMessage("Opción inválida.");
+      printError("Opción inválida.");
   }
   return true;
 }
