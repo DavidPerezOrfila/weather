@@ -1,3 +1,7 @@
+import type { City } from "../types/City.ts";
+import type { Config } from "../types/Config.ts";
+import { printCityList, printError, printInfo } from "./output.ts";
+
 // Prompt por eventos de stdin. node:readline y for-await sobre Bun.stdin.stream()
 // fallan en Bun/Windows con stdin no-TTY (verificado empíricamente).
 // EOF resuelve lo pendiente con null para salir limpio en pipes.
@@ -42,4 +46,25 @@ export function createPrompt(): PromptFn {
   }
 
   return ask;
+}
+
+export function requireCities(config: Config): boolean {
+  if (config.cities.length === 0) {
+    printInfo("No hay ciudades guardadas. Usa la opción 3 para agregar una.");
+    return false;
+  }
+  return true;
+}
+
+export async function pickCity(rl: PromptFn, config: Config, action: string): Promise<City | null> {
+  if (!requireCities(config)) return null;
+  printCityList(config.cities);
+  const answer = await rl(`  Número de ciudad a ${action} (vacío para cancelar): `);
+  if (answer === null || answer === "") return null;
+  const index = Number(answer) - 1;
+  if (Number.isNaN(index) || index < 0 || index >= config.cities.length) {
+    printError("Opción inválida.");
+    return null;
+  }
+  return config.cities[index]!;
 }

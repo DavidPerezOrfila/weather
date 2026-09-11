@@ -1,24 +1,5 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
-
-// Ciudad guardada con sus coordenadas (evita re-geocodificar en cada consulta)
-export interface City {
-  name: string;
-  country: string;
-  admin1?: string;
-  latitude: number;
-  longitude: number;
-}
-
-export type Unit = "c" | "f";
-
-export interface Config {
-  cities: City[];
-  defaultCity: string | null;
-  unit: Unit;
-}
-
-const CONFIG_PATH = join(homedir(), ".weather-cli.json");
+import type { Config } from "../types/Config.ts";
+import { CONFIG_PATH } from "../utils/constants.ts";
 
 export async function loadConfig(): Promise<Config> {
   const file = Bun.file(CONFIG_PATH);
@@ -35,4 +16,8 @@ export async function loadConfig(): Promise<Config> {
 
 export async function saveConfig(config: Config): Promise<void> {
   await Bun.write(CONFIG_PATH, JSON.stringify(config, null, 2));
+}
+
+export function toggleUnit(config: Config): void {
+  config.unit = config.unit === "c" ? "f" : "c";
 }

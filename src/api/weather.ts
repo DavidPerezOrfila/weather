@@ -1,11 +1,7 @@
-import type { City, Unit } from "./storage.ts";
-
-const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
-const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
-
-interface GeocodeResponse {
-  results?: City[];
-}
+import type { City } from "../types/City.ts";
+import type { Unit } from "../types/Config.ts";
+import type { ForecastDay } from "../types/Weather.ts";
+import { FORECAST_URL } from "../utils/constants.ts";
 
 interface ForecastResponse {
   current?: { temperature_2m: number };
@@ -13,27 +9,6 @@ interface ForecastResponse {
 
 interface DailyForecastResponse {
   daily?: { time: string[]; temperature_2m_max: number[]; temperature_2m_min: number[] };
-}
-
-export interface ForecastDay {
-  date: string;
-  min: number;
-  max: number;
-}
-
-export async function searchCity(query: string): Promise<City | null> {
-  const params = new URLSearchParams({ name: query, count: "1", language: "es", format: "json" });
-  const data = (await (await fetch(`${GEOCODING_URL}?${params}`)).json()) as GeocodeResponse;
-  const result = data.results?.[0];
-  // La API devuelve muchos campos extra; persistir solo los que la app usa
-  if (result === undefined) return null;
-  return {
-    name: result.name,
-    country: result.country,
-    admin1: result.admin1,
-    latitude: result.latitude,
-    longitude: result.longitude,
-  };
 }
 
 export async function fetchTemperature(city: City, unit: Unit): Promise<number> {
