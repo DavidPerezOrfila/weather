@@ -1,11 +1,12 @@
 import { loadConfig, saveConfig } from "./src/storage.ts";
 import type { City, Config } from "./src/storage.ts";
-import { fetchTemperature, searchCity } from "./src/openmeteo.ts";
+import { fetchDailyForecast, fetchTemperature, searchCity } from "./src/openmeteo.ts";
 import {
   listCities,
   printHeader,
   printMenu,
   printWeather,
+  printForecast,
   printSuccess,
   printError,
   printInfo,
@@ -87,6 +88,13 @@ async function setDefaultCity(rl: PromptFn, config: Config): Promise<void> {
   printSuccess(`Ciudad default: ${city.name}`);
 }
 
+async function showForecast(rl: PromptFn, config: Config): Promise<void> {
+  const city = await pickCity(rl, config, "ver pronóstico");
+  if (city === null) return;
+  const days = await fetchDailyForecast(city, config.unit);
+  printForecast(city, days, config.unit);
+}
+
 function toggleUnit(config: Config): void {
   config.unit = config.unit === "c" ? "f" : "c";
   printSuccess(`Unidad: ${unitSymbol(config.unit)}`);
@@ -108,6 +116,9 @@ async function runOption(option: string, rl: PromptFn, config: Config): Promise<
       break;
     case "5":
       await setDefaultCity(rl, config);
+      break;
+    case "6":
+      await showForecast(rl, config);
       break;
     case "8":
       toggleUnit(config);

@@ -1,6 +1,7 @@
 # Revisión Weather CLI
 
 - [x] **Colores:** no hay ninguno; falta definir cyan (menú), amarillo (temp), verde/rojo (ok/error).
+- [x] **Pronóstico 7 días:** opción 6 en el menú; `fetchDailyForecast` (min/max, `forecast_days=7`, `timezone=auto`, respeta °F) y `printForecast` con fecha formateada en ES.
 - [ ] **AGENTS.md:** dice que `index.ts` es stub, pero la app ya funciona — hay que actualizarlo.
 - [ ] **Ciudades:** geocoding solo trae 1 resultado; nombres ambiguos pueden fallar.
 - [ ] **Tests:** no existen; conviene al menos probar storage y las APIs con mocks.

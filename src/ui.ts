@@ -1,4 +1,5 @@
 import type { City, Config, Unit } from "./storage.ts";
+import type { ForecastDay } from "./openmeteo.ts";
 import {
   BLUE,
   BOLD,
@@ -38,6 +39,7 @@ export function printMenu(config: Config): void {
   console.log(paint("  3. Buscar y agregar ciudad", GREEN));
   console.log(paint("  4. Eliminar ciudad", RED));
   console.log(paint("  5. Establecer ciudad default", PEACH));
+  console.log(paint("  6. Pronóstico 7 días", BLUE));
   console.log(paint(`  8. Ajustes (${unitSymbol(config.unit)})`, YELLOW));
   console.log(paint("  9. Salir", GRAY));
   console.log(paint(LINE, GRAY));
@@ -57,6 +59,25 @@ export function printInfo(text: string): void {
 
 export function printWeather(city: City, temp: number, unit: Unit): void {
   console.log(paint(`  ${formatLocation(city)}: `, TEXT) + paint(`${temp} ${unitSymbol(unit)}`, YELLOW));
+}
+
+// Fechas "YYYY-MM-DD" de la API: formatear en UTC para no desplazar el día
+const dateFormat = new Intl.DateTimeFormat("es", {
+  weekday: "short",
+  day: "numeric",
+  month: "short",
+  timeZone: "UTC",
+});
+
+export function printForecast(city: City, days: ForecastDay[], unit: Unit): void {
+  console.log(paint(`  Pronóstico de ${formatLocation(city)}`, TEXT));
+  for (const day of days) {
+    const date = dateFormat.format(new Date(day.date));
+    console.log(
+      paint(`  ${date}: `, GRAY) +
+        paint(`${day.min} / ${day.max} ${unitSymbol(unit)}`, YELLOW),
+    );
+  }
 }
 
 export function listCities(cities: City[]): void {
