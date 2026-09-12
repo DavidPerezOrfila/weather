@@ -1,8 +1,9 @@
 import type { Config } from "../types/Config.ts";
 import { CONFIG_PATH } from "../utils/constants.ts";
 
-export async function loadConfig(): Promise<Config> {
-  const file = Bun.file(CONFIG_PATH);
+// path inyectable para tests; en producción usa CONFIG_PATH
+export async function loadConfig(path: string = CONFIG_PATH): Promise<Config> {
+  const file = Bun.file(path);
   if (!(await file.exists())) {
     return { cities: [], defaultCity: null, unit: "c" };
   }
@@ -14,8 +15,8 @@ export async function loadConfig(): Promise<Config> {
   };
 }
 
-export async function saveConfig(config: Config): Promise<void> {
-  await Bun.write(CONFIG_PATH, JSON.stringify(config, null, 2));
+export async function saveConfig(config: Config, path: string = CONFIG_PATH): Promise<void> {
+  await Bun.write(path, JSON.stringify(config, null, 2));
 }
 
 export function toggleUnit(config: Config): void {
